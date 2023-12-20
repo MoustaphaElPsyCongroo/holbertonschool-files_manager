@@ -16,12 +16,12 @@ class DBClient {
   }
 
   async nbUsers() {
-    const usersCount = this.db.collection('users').countDocuments();
+    const usersCount = await this.db.collection('users').countDocuments();
     return usersCount;
   }
 
   async nbFiles() {
-    const filesCount = this.db.collection('files').countDocuments();
+    const filesCount = await this.db.collection('files').countDocuments();
     return filesCount;
   }
 }
