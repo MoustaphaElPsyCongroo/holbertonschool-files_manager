@@ -7,19 +7,19 @@ class UsersController {
 
     if (!email) {
       res.status(400);
-      return res.send('Missing email');
+      return res.send({ error: 'Missing email' });
     }
 
     if (!password) {
       res.status(400);
-      return res.send('Missing password');
+      return res.send({ error: 'Missing password' });
     }
 
     const user = await dbClient.db.collection('users').findOne({ email });
 
     if (user) {
       res.status(400);
-      return res.send('Already exist');
+      return res.send({ error: 'Already exist' });
     }
 
     const hashedPassword = sha1(password);
