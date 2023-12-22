@@ -53,7 +53,7 @@ async function checkRequest(res, req, token) {
   const { data } = req.body;
 
   if (!data && type !== 'folder') {
-    return res.status(400).send({ error: 'Unauthorized' });
+    return res.status(400).send({ error: 'Missing data' });
   }
 
   let { parentId } = req.body;
