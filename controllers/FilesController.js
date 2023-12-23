@@ -68,9 +68,9 @@ class FilesController {
 
     if (parentId) {
       parentId = ObjectId(parentId);
+      match = { parentId };
     }
 
-    match = { parentId };
     const { page = 0 } = req.query;
     const pipeline = [{ $match: match }, { $skip: page * 20 }, { $limit: 20 }, {
       $project: {
