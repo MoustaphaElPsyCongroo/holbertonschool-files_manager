@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuid4 } from 'uuid';
 import fs from 'fs';
 import dbClient from './db';
-import getUser from './users';
+import { getUserFromToken } from './users';
 
 async function addFileToDB(userId, name, type, parentId, isPublic, localPath = null) {
   let newFile;
@@ -32,7 +32,7 @@ async function addFileToLocalFolder(path, newFolderPath, data) {
 }
 
 async function checkRequest(res, req, token) {
-  const user = await getUser(token);
+  const user = await getUserFromToken(token);
 
   if (!user) {
     return res.status(401).send({ error: 'Unauthorized' });

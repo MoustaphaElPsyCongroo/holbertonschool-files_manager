@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import redisClient from './redis';
 import dbClient from './db';
 
-async function getUser(token) {
+async function getUserFromToken(token) {
   const key = `auth_${token}`;
   const userId = await redisClient.get(key);
 
@@ -19,4 +19,17 @@ async function getUser(token) {
   return user;
 }
 
-export default getUser;
+async function getUserFromId(id) {
+  if (!id) {
+    return null;
+  }
+
+  const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(id) });
+
+  if (!user) {
+    return null;
+  }
+  return user;
+}
+
+export { getUserFromId, getUserFromToken };
