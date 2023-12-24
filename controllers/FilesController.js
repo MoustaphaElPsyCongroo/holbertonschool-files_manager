@@ -1,4 +1,6 @@
 import { ObjectId } from 'mongodb';
+import fs from 'fs';
+import mime from 'mime-types';
 import dbClient from '../utils/db';
 import { checkRequest, uploadFile } from '../utils/files';
 import { getUserFromToken } from '../utils/users';
@@ -132,6 +134,55 @@ class FilesController {
       return res.status(404).send({ error: 'Not found' });
     }
     return res.status(200).send(updateResult.value);
+  }
+
+  static async getFile(req, res) {
+    const { id = '' } = req.params;
+
+    if (id === '') {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id) });
+    if (!file) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    const { size = 0 } = req.query;
+    let path;
+    if (!size) {
+      path = file.localPath;
+    } else {
+      path = `${file.localPath}_${size}`;
+    }
+
+    if (!file.isPublic) {
+      const token = req.headers['x-token'];
+
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const user = await getUserFromToken(token);
+
+      if (!user || file.userId.toString() !== user._id.toString()) {
+        return res.status(401).send({ error: 'Not found' });
+      }
+    }
+
+    if (file.type === 'folder') {
+      return res.status(400).send({ error: "A folder does't have content" });
+    }
+
+    try {
+      const data = fs.readFileSync(path);
+      const mimeType = mime.contentType(file.name);
+      res.setHeader('Content-Type', mimeType);
+
+      return res.status(200).send(data);
+    } catch (err) {
+      return res.status(404).send({ error: 'Not found' });
+    }
   }
 }
 
