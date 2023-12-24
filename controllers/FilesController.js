@@ -83,6 +83,56 @@ class FilesController {
 
     return res.status(200).send(paginatedFiles);
   }
+
+  static async putPublish(req, res) {
+    const token = req.headers['x-token'];
+
+    if (!token) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const user = await getUserFromToken(token);
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const updateResult = await dbClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(req.params.id), userId: user._id },
+      { $set: { isPublic: true } },
+      { projection: { localPath: 0 }, returnDocument: 'after' },
+    );
+
+    if (updateResult.lastErrorObject.updatedExisting === false) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+    return res.status(200).send(updateResult.value);
+  }
+
+  static async putUnpublish(req, res) {
+    const token = req.headers['x-token'];
+
+    if (!token) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const user = await getUserFromToken(token);
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const updateResult = await dbClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(req.params.id), userId: user._id },
+      { $set: { isPublic: false } },
+      { projection: { localPath: 0 }, returnDocument: 'after' },
+    );
+
+    if (updateResult.lastErrorObject.updatedExisting === false) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+    return res.status(200).send(updateResult.value);
+  }
 }
 
 export default FilesController;
